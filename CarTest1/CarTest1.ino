@@ -79,11 +79,6 @@ void loop(){
   analogWrite(enableA, ENASpeed);
   analogWrite(enableA, ENBSpeed);
 
-/*  int FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
-  int FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor
-  int RR = digitalRead(REAR_RIGHT);// read CENTER_RIGHT sensor
-  int RL = digitalRead(REAR_LEFT);// read CENTER_LEFT sensor  
-*/
   carMoveForwardMveForward();
   carAvoidObstacle();
      
