@@ -8,7 +8,7 @@ const int pinA1 = 7;   // The On-Board Arduino
 const int pinA2 = 6;  // The On-Board Arduino
 
 //Motor B Pins
-const int EnableB = 8;    // The On-Board Arduino 
+const int enableA = 8;    // The On-Board Arduino 
 const int pinB1 = 5;     // The On-Board Arduino 
 const int pinB2 = 4;    // The On-Board Arduino 
 
@@ -21,7 +21,8 @@ const int LED13 = 13;           // The On-Board Arduino LED - @Digitalpin 13
 const int LED1 = 1;            // The On-Board Arduino LED - @Digitalpin 1
 //Buzzer Pins
 const int buzzer = A0;           //Declares Buzzer @Analogpin A0
-
+//
+const int startAngle = 160;
 //UltraSonic Sensor Pins
 #define trigPin A4
 #define echoPin A3
@@ -44,7 +45,7 @@ void setup() {
    pinMode(pinA1, OUTPUT);
    pinMode(pinA2, OUTPUT);
 
-   //PinMode(EnableB, OUTPUT);
+   //PinMode(enableA, OUTPUT);
    pinMode(pinB1, OUTPUT);
    pinMode(pinB2, OUTPUT); 
 
@@ -76,109 +77,107 @@ void loop(){
 
   //Use analogWrite To Run Motor At Adjusted Speed
   analogWrite(enableA, ENASpeed);
-  analogWrite(EnableB, ENBSpeed);
+  analogWrite(enableA, ENBSpeed);
 
 /*  int FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
   int FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor
   int RR = digitalRead(REAR_RIGHT);// read CENTER_RIGHT sensor
   int RL = digitalRead(REAR_LEFT);// read CENTER_LEFT sensor  
 */
-  car();
-  avoid();
+  carMoveForwardMveForward();
+  carAvoidObstacle();
      
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //- -- --- Motor Functions --- -- -
-void motorA_Forward() {
+// set motor A to forward movement
+void motorAForward() {
  digitalWrite(pinA1, HIGH);
  digitalWrite(pinA2, LOW);
 }
-void motorB_Forward() {
+// set motor B to forward movement
+void motorBForward() {
  digitalWrite(pinB1, LOW);
  digitalWrite(pinB2, HIGH);
 }
-void motorA_Backward() {
+// set motor A to backward movement
+void motorABackward() {
  digitalWrite(pinA1, LOW);
  digitalWrite(pinA2, HIGH);
 }
-void motorB_Backward() {
+//set motor A to backward movement
+void motorBBackward() {
  digitalWrite(pinB1, HIGH);
  digitalWrite(pinB2, LOW);
 }
-void motorA_Stop() {
+//set motor A to Stop 
+void motorAStop() {
  digitalWrite(pinA1, HIGH);
  digitalWrite(pinA2, HIGH);
 }
-void motorB_Stop() {
+//set motor B to Stop 
+void motorBStop() {
  digitalWrite(pinB1, HIGH);
  digitalWrite(pinB2, HIGH);
 }
-void motorA_Coast() {
- digitalWrite(pinA1, LOW);
- digitalWrite(pinA2, LOW);
-}
-void motorB_Coast() {
- digitalWrite(pinB1, LOW);
- digitalWrite(pinB2, LOW);
-}
-void motorA_On() {
+//set motor A to ON 
+void motorAOn() {
  digitalWrite(enableA, HIGH);
 }
-void motorB_On() {
- digitalWrite(EnableB, HIGH);
+//set motor B to ON  
+void motorBOn() {
+ digitalWrite(enableA, HIGH);
 }
-void motorA_Off() {
+//set motor A OFF  
+void motorAOff() {
  digitalWrite(enableA, LOW);
 }
-void motorB_Off() {
- digitalWrite(EnableB, LOW);
+//set motor B OFF 
+void motorBOff() {
+ digitalWrite(enableA, LOW);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //- -- --- Movement Functions --- -- -
-void forward(int duration) {
- motorA_Forward();
- motorB_Forward();
+void moveForward(int duration) {
+ motorAForward();
+ motorBForward();
  delay(duration);
 }
-void backward(int duration) {
- motorA_Backward();
- motorB_Backward();
+void moveBackward(int duration) {
+ motorABackward();
+ motorBBackward();
  delay(duration);
 }
 void right(int duration) {
- motorA_Backward();
- motorB_Forward();
+ motorABackward();
+ motorBForward();
  delay(duration);
 }
 void left(int duration) {
- motorA_Forward();
- motorB_Backward();
+ motorAForward();
+ motorBBackward();
  delay(duration);
 }
-void coast(int duration) {
- motorA_Coast();
- motorB_Coast();
- delay(duration);
-}
-void breakRobot(int duration) {
- motorA_Stop();
- motorB_Stop();
+
+void stopMovement(int duration) {
+ motorAStop();
+ motorBStop();
  delay(duration);
 }
 void disableMotors() {
- motorA_Off();
- motorB_Off();
+ motorAOff();
+ motorBOff();
 }
 void enableMotors() {
- motorA_On();
- motorB_On();
+ motorAOn();
+ motorBOn();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- Recieving The Distance From The UltraSonic Sensor --- -- -
-int distance(){
+//- -- --- Recieving The Calculated Distance From The UltraSonic Sensor --- -- -
+int calculateDistance(){
   int duration, distance;
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(1000);
@@ -189,53 +188,52 @@ int distance(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- Car Driving Forward --- -- -
-void car(){
-int distance_0;
+//- -- --- Car Moving Forward --- -- -
+void carMoveForwardMveForward(){
+int distanceCalculated;
 int FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
 int FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor
 int CR = digitalRead(CENTER_RIGHT);// read CENTER_RIGHT sensor
 int CL = digitalRead(CENTER_LEFT);// read CENTER_LEFT sensor 
-distance_0 = distance();
+distanceCalculated = calculateDistance(); //calculating the Distance 1 time 
 delay(50);
 
-  while( (distance_0 > 20 ) && (FR == HIGH) && (FL == HIGH) && (CR == HIGH) && (CL == HIGH) )
+  while( (distanceCalculated > 20 ) && (FR == HIGH) && (FL == HIGH) && (CR == HIGH) && (CL == HIGH) )
   {   
-     motorA_On();
-     motorB_On();
-     forward(250);    
-     distance_0 = distance();     
+     enableMotors(); //turn ON motor A and B 
      
-     FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
-     FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor 
-     CR = digitalRead(CENTER_RIGHT);// read CENTER_RIGHT sensor
-     CL = digitalRead(CENTER_LEFT);// read CENTER_LEFT sensor 
+     moveForward(250); // car moves forward 
+   
+     distanceCalculated = calculateDistance(); // calculating the distance again    
+     
+     FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor again 
+     FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor again
+     CR = digitalRead(CENTER_RIGHT);// read CENTER_RIGHT sensor again
+     CL = digitalRead(CENTER_LEFT);// read CENTER_LEFT sensor again
   }  
-  breakRobot(0); 
+  stopMovement(0); // stop the car 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //- -- --- Car Avoiding Obstacle = Search New Route --- -- -
-void avoid(){
+void carAvoidObstacle(){
 
-  int newdistance = distance();
+  int newdistance = calculateDistance();
   bool flag = true;
-  bool canturn = false;
-  int newangle;
-  int count = 1;  
-  
+  bool canturn = false; 
+
   while(flag){      
-    flag = findNewRoute();      
+    flag = searchNewRoute();      
   } 
   myservo.write(90); 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool findNewRoute(){
+bool searchNewRoute(){
   bool flag = true;
-  int newDistance =distance() ;
-  int newAngle = 160;
+  int newDistance =calculateDistance() ;
+  int newAngle = startAngle;
   bool newroute = true;
   int FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
   int FL = digitalRead(FRONT_LEFT);// read FRONT_RIGHT sensor
@@ -247,22 +245,22 @@ bool findNewRoute(){
     if(newAngle > 30){
       myservo.write(newAngle);                 //command to rotate the servo to the specified angle
       delay(50);
-      newDistance = distance();
+      newDistance = calculateDistance();
       if(newDistance > 20){
         flag = false;        
         if( (newAngle > 90) ){
-          turnLeft();         
+          moveBackwardLeft();         
         }else{
-          turnRight();       
+          moveBackwardRight();       
         } 
       }
     }else{
       myservo.write(90);
       flag = false;
-      reverse();
-      turnRight(); 
-      turnRight(); 
-      turnRight(); 
+      goReverse();
+      moveBackwardRight(); 
+      moveBackwardRight(); 
+      moveBackwardRight(); 
     }
     newAngle =newAngle - 40; 
     newroute = false;
@@ -271,20 +269,20 @@ bool findNewRoute(){
     myservo.write(90);
     if(FR == LOW || CR == LOW){
       flag = false;
-      turnRight();
+      moveBackwardRight();
     }
     else if(FL == LOW || CL == LOW){
       flag = false;
-      turnLeft();
+      moveBackwardLeft();
     }
     else if(CR == LOW || CL == LOW){
       flag = false;
-      reverse();
-      turnRight();
+      goReverse();
+      moveBackwardRight();
       delay(50);
-      turnRight();
+      moveBackwardRight();
       delay(50);
-      turnRight();
+      moveBackwardRight();
     }
     
     FR = digitalRead(FRONT_RIGHT);// read FRONT_LEFT sensor
@@ -298,57 +296,56 @@ bool findNewRoute(){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void turnLeft(){
+// - -- --- car moves backward and turn Left/Right functions :1----------------------------------------------
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//- -- --- car moves backward and turn Left -------------------------
+void moveBackwardLeft(){
   digitalWrite(LED13, HIGH);            //Sets The  LED Duty Ratio ON
   left(500);
-  backward(500);    
+  moveBackward(500);    
   digitalWrite(LED13, LOW);            //Sets The  LED Duty Ratio OFF      
 }
-
-void turnRight(){
+//- -- --- car moves backward and turn Right ----------------------
+void moveBackwardRight(){
   digitalWrite(LED1, HIGH);            //Sets The  LED Duty Ratio ON
   right(500);
-  backward(500);          
+  moveBackward(500);          
   digitalWrite(LED1, LOW);            //Sets The  LED Duty Ratio OFF
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// - -- --- car moves backward and turn Left/Right functions :2----------------------------------------------
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- 
-void reverseLeft(){
+//- -- --- car moves backward and turn Left ---------------------------------------------------------------
+void goReverseLeft(){
   digitalWrite(LED13, HIGH);            //Sets The  LED Duty Ratio ON
   left(30);
-  backward(250);
+  moveBackward(250);
   myservo.write(90);
   digitalWrite(LED1, LOW);            //Sets The  LED Duty Ratio OFF
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- 
-void reverseRight(){
+//- -- --- car moves backward and turn Right -----------------------
+void goReverseRight(){
   digitalWrite(LED1, HIGH);            //Sets The  LED Duty Ratio ON
   right(30);
-  backward(250);
+  moveBackward(250);
   myservo.write(90);
   digitalWrite(LED1, LOW);            //Sets The  LED Duty Ratio OFF
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- 
-void reverse(){
+//- -- --- car moves backward ----------------------------------------------------------------------------
+void goReverse(){
  digitalWrite(LED13, HIGH);            //Sets The  LED Duty Ratio ON
  digitalWrite(LED1, HIGH);            //Sets The  LED Duty Ratio ON
- backward(500);
+ moveBackward(500);
  myservo.write(90);
  digitalWrite(LED13, LOW);            //Sets The  LED Duty Ratio OFF
  digitalWrite(LED1, LOW);            //Sets The  LED Duty Ratio OFF
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
-//- -- --- 
-void TurnBack(){
-  motorA_Backward();
-  motorB_Forward();
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
